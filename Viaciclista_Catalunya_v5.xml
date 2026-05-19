@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  NORMAS DE DISEÑO PARA VÍAS CICLISTAS DE CATALUÑA  v5
+  Civil3DRoadwayDesignStandards - Compatible Autodesk Civil 3D 2018+
+
+  Referencia: "Manual para el diseño de vías ciclistas de Cataluña"
+              Generalitat de Catalunya / PTOP - mayo 2008
+
+  CORRECCIÓN v5: estructura de tabla corregida según formato Autodesk:
+    - Radios de MAYOR a MENOR (NC primero, eMax al final)
+    - NC en el radio >= R_NC = V²/(127·f)
+    - Misma estructura que AASHTO 2018 Metric del XML de Autodesk
+
+  Parámetros:
+    eMax    =  2.0%   (peralte máximo, apt. 3.1.2)
+    eBombeo = -2.0%   (bombeo en recta, apt. 3.1.7)
+    w       =  1.5m   (ancho carril pista-bici unidireccional, Cuadro 11)
+    Delta   =  0.5%/m (tasa variación peralte → tLength_min = 6.0m)
+
+  R_NC por velocidad (radio donde e=0, fórmula apt. 3.1.2):
+    V=10 → 2.4m  | V=15 → 5.4m  | V=20 → 10.2m
+    V=25 → 16.7m | V=30 → 25.3m | V=50 → 93.7m
+    → R=100m > R_NC(50)=93.7m → eRate=NC → sin región peralte ✓
+
+  Instalación:
+    C:\ProgramData\Autodesk\Civil 3D 202x\enu\Data\Corridor Design Standards\
+  ══════════════════════════════════════════════════════════════════════════
+-->
+<Civil3DRoadwayDesignStandards version="2.0"
+    date="2025-01-01" time="00:00:00"
+    xmlns="urn:Civil3DRoadwayDesignStandards-schema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:Civil3DRoadwayDesignStandards-schema ..\_Autodesk%20Civil%203D%20Roadway%20Design%20Standards.xsd">
+
+  <Units>
+    <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" speedUnit="kilometersPerHour"/>
+  </Units>
+
+  <Alignments>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         RADIOS MÍNIMOS - Cuadro 5 del manual (vías pavimentadas)
+         R_min = V² / [127·(eMax + f)]
+         ═══════════════════════════════════════════════════════════ -->
+    <MinimumRadiusTables>
+
+      <MinimumRadiusTable name="Via Ciclista Pavimentada eMax 2% - V10-20 km/h">
+        <MinimumRadius speed="10" radius="2"/>
+        <MinimumRadius speed="15" radius="5"/>
+        <MinimumRadius speed="20" radius="10"/>
+      </MinimumRadiusTable>
+
+      <MinimumRadiusTable name="Via Ciclista Pavimentada eMax 2% - V25-30 km/h">
+        <MinimumRadius speed="25" radius="16"/>
+        <MinimumRadius speed="30" radius="24"/>
+      </MinimumRadiusTable>
+
+      <MinimumRadiusTable name="Via Ciclista Pavimentada eMax 2% - V50 km/h">
+        <!-- R_min=86m exacto del Cuadro 5 -->
+        <MinimumRadius speed="50" radius="86"/>
+      </MinimumRadiusTable>
+
+    </MinimumRadiusTables>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MÉTODOS DE TRANSICIÓN DE PERALTE
+         ═══════════════════════════════════════════════════════════ -->
+    <SuperelevationAttainmentMethods>
+
+      <SuperelevationAttainmentMethod name="Via Ciclista con Bombeo">
+        <TransitionStyleStandard>
+          <TransitionFormula type="LCtoFS" formula="{t}"/>
+          <TransitionFormula type="LCtoBC" formula="{p}*{t}"/>
+          <TransitionFormula type="NCtoLC" formula="{t}*{c}/{e}"/>
+          <TransitionFormula type="LCtoRC" formula="{t}*{c}/{e}"/>
+        </TransitionStyleStandard>
+      </SuperelevationAttainmentMethod>
+
+      <SuperelevationAttainmentMethod name="Via Ciclista Plana (una agua)">
+        <TransitionStylePlanar>
+          <Continuing>
+            <TransitionFormula type="NCtoFS" formula="{t}-{t}*{c}/{e}"/>
+            <TransitionFormula type="NCtoBC" formula="{t}*({p}-{c}/{e})"/>
+          </Continuing>
+          <Opposing>
+            <TransitionFormula type="LCtoFS" formula="{t}"/>
+            <TransitionFormula type="LCtoBC" formula="{p}*{t}"/>
+            <TransitionFormula type="NCtoLC" formula="{t}*{c}/{e}"/>
+          </Opposing>
+        </TransitionStylePlanar>
+      </SuperelevationAttainmentMethod>
+
+    </SuperelevationAttainmentMethods>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         TABLAS DE PERALTES
+         FORMATO CORRECTO (igual que AASHTO Autodesk):
+           - Radios de MAYOR a MENOR
+           - Primera fila: radio >= R_NC → eRate="NC"
+           - Filas siguientes: peralte creciente hasta eMax=2%
+         tLength = e·w/Delta = e·1.5/0.5 = e·3.0  (mín. 6.0m)
+         ═══════════════════════════════════════════════════════════ -->
+    <SuperelevationTables>
+
+      <!-- V=10 km/h | f=0.33 | R_min=2m | R_NC=2.4m
+           Acera-bici V_min, Calle convivencia V_min -->
+      <SuperelevationTable name="Via Ciclista Catalunya - V10 km/h eMax 2%">
+        <SuperelevationTypeByTable>
+          <SuperelevationDesignSpeed speed="10">
+            <SuperelevationRate radius="3"  eRate="NC"/>
+            <SuperelevationRate radius="2"  eRate="2.00"/>
+          </SuperelevationDesignSpeed>
+          <TransitionLengthTables>
+            <TransitionLengthTable name="Via Ciclista - V10 km/h Transicion Peralte">
+              <TransitionLengthTypeByTable>
+                <TransitionLengthDesignSpeed speed="10">
+                  <TransitionLength radius="3"  tLength="6.00"/>
+                  <TransitionLength radius="2"  tLength="6.00"/>
+                </TransitionLengthDesignSpeed>
+              </TransitionLengthTypeByTable>
+            </TransitionLengthTable>
+          </TransitionLengthTables>
+        </SuperelevationTypeByTable>
+      </SuperelevationTable>
+
+      <!-- V=15 km/h | f=0.33 | R_min=5m | R_NC=5.4m
+           Acera-bici V_min -->
+      <SuperelevationTable name="Via Ciclista Catalunya - V15 km/h eMax 2%">
+        <SuperelevationTypeByTable>
+          <SuperelevationDesignSpeed speed="15">
+            <SuperelevationRate radius="6"  eRate="NC"/>
+            <SuperelevationRate radius="5"  eRate="2.00"/>
+          </SuperelevationDesignSpeed>
+          <TransitionLengthTables>
+            <TransitionLengthTable name="Via Ciclista - V15 km/h Transicion Peralte">
+              <TransitionLengthTypeByTable>
+                <TransitionLengthDesignSpeed speed="15">
+                  <TransitionLength radius="6"  tLength="6.00"/>
+                  <TransitionLength radius="5"  tLength="6.00"/>
+                </TransitionLengthDesignSpeed>
+              </TransitionLengthTypeByTable>
+            </TransitionLengthTable>
+          </TransitionLengthTables>
+        </SuperelevationTypeByTable>
+      </SuperelevationTable>
+
+      <!-- V=20 km/h | f=0.31 | R_min=10m | R_NC=10.2m
+           Acera-bici V_gen, Calle convivencia V_gen, Camino verde V_min -->
+      <SuperelevationTable name="Via Ciclista Catalunya - V20 km/h eMax 2%">
+        <SuperelevationTypeByTable>
+          <SuperelevationDesignSpeed speed="20">
+            <SuperelevationRate radius="11" eRate="NC"/>
+            <SuperelevationRate radius="10" eRate="2.00"/>
+          </SuperelevationDesignSpeed>
+          <TransitionLengthTables>
+            <TransitionLengthTable name="Via Ciclista - V20 km/h Transicion Peralte">
+              <TransitionLengthTypeByTable>
+                <TransitionLengthDesignSpeed speed="20">
+                  <TransitionLength radius="11" tLength="6.00"/>
+                  <TransitionLength radius="10" tLength="6.00"/>
+                </TransitionLengthDesignSpeed>
+              </TransitionLengthTypeByTable>
+            </TransitionLengthTable>
+          </TransitionLengthTables>
+        </SuperelevationTypeByTable>
+      </SuperelevationTable>
+
+      <!-- V=25 km/h | f=0.295 | R_min=16m | R_NC=16.7m -->
+      <SuperelevationTable name="Via Ciclista Catalunya - V25 km/h eMax 2%">
+        <SuperelevationTypeByTable>
+          <SuperelevationDesignSpeed speed="25">
+            <SuperelevationRate radius="18" eRate="NC"/>
+            <SuperelevationRate radius="17" eRate="1.26"/>
+            <SuperelevationRate radius="16" eRate="2.00"/>
+          </SuperelevationDesignSpeed>
+          <TransitionLengthTables>
+            <TransitionLengthTable name="Via Ciclista - V25 km/h Transicion Peralte">
+              <TransitionLengthTypeByTable>
+                <TransitionLengthDesignSpeed speed="25">
+                  <TransitionLength radius="18" tLength="6.00"/>
+                  <TransitionLength radius="17" tLength="6.00"/>
+                  <TransitionLength radius="16" tLength="6.00"/>
+                </TransitionLengthDesignSpeed>
+              </TransitionLengthTypeByTable>
+            </TransitionLengthTable>
+          </TransitionLengthTables>
+        </SuperelevationTypeByTable>
+      </SuperelevationTable>
+
+      <!-- V=30 km/h | f=0.28 | R_min=24m | R_NC=25.3m
+           Camino verde V_gen -->
+      <SuperelevationTable name="Via Ciclista Catalunya - V30 km/h eMax 2%">
+        <SuperelevationTypeByTable>
+          <SuperelevationDesignSpeed speed="30">
+            <SuperelevationRate radius="26" eRate="NC"/>
+            <SuperelevationRate radius="25" eRate="0.35"/>
+            <SuperelevationRate radius="24" eRate="2.00"/>
+          </SuperelevationDesignSpeed>
+          <TransitionLengthTables>
+            <TransitionLengthTable name="Via Ciclista - V30 km/h Transicion Peralte">
+              <TransitionLengthTypeByTable>
+                <TransitionLengthDesignSpeed speed="30">
+                  <TransitionLength radius="26" tLength="6.00"/>
+                  <TransitionLength radius="25" tLength="6.00"/>
+                  <TransitionLength radius="24" tLength="6.00"/>
+                </TransitionLengthDesignSpeed>
+              </TransitionLengthTypeByTable>
+            </TransitionLengthTable>
+          </TransitionLengthTables>
+        </SuperelevationTypeByTable>
+      </SuperelevationTable>
+
+      <!-- V=50 km/h | f=0.21 | R_min=86m | R_NC=93.7m
+           Pista-bici V_gen, Camino verde segregado V_gen
+           R=94m → NC → R=100m queda como NC → sin región peralte → sin overlap ✓ -->
+      <SuperelevationTable name="Via Ciclista Catalunya - V50 km/h eMax 2%">
+        <SuperelevationTypeByTable>
+          <SuperelevationDesignSpeed speed="50">
+            <SuperelevationRate radius="94" eRate="NC"/>
+            <SuperelevationRate radius="93" eRate="0.17"/>
+            <SuperelevationRate radius="92" eRate="0.40"/>
+            <SuperelevationRate radius="91" eRate="0.63"/>
+            <SuperelevationRate radius="90" eRate="0.87"/>
+            <SuperelevationRate radius="89" eRate="1.12"/>
+            <SuperelevationRate radius="88" eRate="1.37"/>
+            <SuperelevationRate radius="87" eRate="1.63"/>
+            <SuperelevationRate radius="86" eRate="1.89"/>
+          </SuperelevationDesignSpeed>
+          <TransitionLengthTables>
+            <TransitionLengthTable name="Via Ciclista - V50 km/h Transicion Peralte">
+              <TransitionLengthTypeByTable>
+                <TransitionLengthDesignSpeed speed="50">
+                  <TransitionLength radius="94" tLength="6.00"/>
+                  <TransitionLength radius="93" tLength="6.00"/>
+                  <TransitionLength radius="92" tLength="6.00"/>
+                  <TransitionLength radius="91" tLength="6.00"/>
+                  <TransitionLength radius="90" tLength="6.00"/>
+                  <TransitionLength radius="89" tLength="6.00"/>
+                  <TransitionLength radius="88" tLength="6.00"/>
+                  <TransitionLength radius="87" tLength="6.00"/>
+                  <TransitionLength radius="86" tLength="6.00"/>
+                </TransitionLengthDesignSpeed>
+              </TransitionLengthTypeByTable>
+            </TransitionLengthTable>
+          </TransitionLengthTables>
+        </SuperelevationTypeByTable>
+      </SuperelevationTable>
+
+    </SuperelevationTables>
+
+  </Alignments>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PERFIL - ACUERDOS VERTICALES
+       K convexos: K = Dp² / [2·(√h1+√h2)²]  h1=1.40m h2=0.20m
+       K cóncavos: Cuadro 10 del manual (confort ciclista)
+  ═══════════════════════════════════════════════════════════════════ -->
+  <Profiles>
+    <MinimumKTables>
+
+      <MinimumKTable name="Via Ciclista Catalunya - Acuerdos Convexos Parada">
+        <StoppingSightDistance>
+          <MinimumK_SSD speed="10"  K="37"/>
+          <MinimumK_SSD speed="15"  K="37"/>
+          <MinimumK_SSD speed="20"  K="75"/>
+          <MinimumK_SSD speed="25"  K="137"/>
+          <MinimumK_SSD speed="30"  K="230"/>
+          <MinimumK_SSD speed="50"  K="1030"/>
+        </StoppingSightDistance>
+      </MinimumKTable>
+
+      <MinimumKTable name="Via Ciclista Catalunya - Acuerdos Convexos Parada Bajada -5%">
+        <StoppingSightDistance>
+          <MinimumK_SSD speed="10"  K="42"/>
+          <MinimumK_SSD speed="15"  K="42"/>
+          <MinimumK_SSD speed="20"  K="91"/>
+          <MinimumK_SSD speed="25"  K="169"/>
+          <MinimumK_SSD speed="30"  K="286"/>
+          <MinimumK_SSD speed="50"  K="1330"/>
+        </StoppingSightDistance>
+      </MinimumKTable>
+
+      <MinimumKTable name="Via Ciclista Catalunya - Acuerdos Concavos Confort">
+        <StoppingSightDistance>
+          <MinimumK_SSD speed="10"  K="0.1"/>
+          <MinimumK_SSD speed="15"  K="0.2"/>
+          <MinimumK_SSD speed="20"  K="0.3"/>
+          <MinimumK_SSD speed="25"  K="0.5"/>
+          <MinimumK_SSD speed="30"  K="0.7"/>
+          <MinimumK_SSD speed="50"  K="1.9"/>
+        </StoppingSightDistance>
+      </MinimumKTable>
+
+    </MinimumKTables>
+  </Profiles>
+
+</Civil3DRoadwayDesignStandards>
